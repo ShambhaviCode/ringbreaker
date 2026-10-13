@@ -1,0 +1,10 @@
+falkordb>=1.7
+mcp>=2.2,<3          # mcp 2.x: FastMCP is now MCPServer (from mcp.server.mcpserver import MCPServer)
+streamlit>=1.65
+pyvis>=0.3.2
+python-dotenv>=1.0
+anthropic>=1.0       # only needed with LLM_PROVIDER=anthropic
+openai>=1.40         # only needed with LLM_PROVIDER=openai (any OpenAI-compatible endpoint)
+pytest>=8
+# Optional: run FalkorDB without Docker (bundles redis-server + the FalkorDB module, Linux/macOS)
+# falkordblite>=0.10

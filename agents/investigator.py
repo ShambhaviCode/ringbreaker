@@ -71,7 +71,10 @@ class InvestigatorAgent(Agent):
             elif step == "expand_neighbors" and f.get("entity"):
                 r = self.tool("expand_neighbors", node_id=f["entity"]["id"], hops=3)
                 f["reached_accounts"] = len(r.get("accounts", []))
-                self.say(f"3-hop expansion reaches {f['reached_accounts']} accounts via {r.get('counts')}.")
+                c = r.get("counts", {})
+                via = ", ".join(f"{c[k]} {k.lower() if k != 'IP' else 'IP'}{'s' if c[k] > 1 else ''}"
+                                for k in ("Device", "IP", "Phone") if c.get(k))
+                self.say(f"Within 3 hops: {f['reached_accounts']} accounts, reached through {via or 'direct links'}.")
             elif step == "find_shared_infrastructure" and f.get("accounts"):
                 r = self.tool("find_shared_infrastructure", account_ids=f["accounts"])
                 f["suspicious_infra"] = [s for s in r["shared"] if s["suspicious"]]

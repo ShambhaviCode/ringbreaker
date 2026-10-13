@@ -6,6 +6,32 @@
 
 ---
 
+## 0. Current status (read this first)
+
+The whole project is already built and tested (`./run.sh test`: 8 tests pass, including 5 concurrent cases).
+Do NOT rebuild it. Work from what exists:
+
+- Data, schema, loader: `data/generate.py`, `graph/schema.py`, `graph/load.py` (two banks, 3 planted scenarios)
+- 30 graph tools: `graph/tools.py` (Cypher in `graph/queries.py`), exposed by `mcp_server/server.py`
+- Agents: `agents/intake.py`, `investigator.py`, `action.py`, `brain.py`, `orchestrator.py`; `agents/llm.py`
+  (anthropic | openai-compatible | none | mock); `agents/mcp_client.py` (agents call tools over MCP stdio)
+- UI: `app/streamlit_app.py` (5 tabs) + `app/graph_render.py`
+- Demo CLI: `python -m scripts.demo --reset`; docs: `README.md`, `docs/blog_post.md`, `docs/demo_video_script.md`
+
+Verified facts (don't re-research): FalkorDB 4.18 has algo.pageRank, algo.WCC, algo.labelPropagation,
+algo.betweenness, algo.SPpaths, algo.SSpaths, algo.BFS. Undirected shortestPath() is NOT supported; use
+algo.SPpaths({relDirection: 'both'}). The `mcp` Python SDK 2.x renamed FastMCP to MCPServer
+(`from mcp.server.mcpserver import MCPServer`).
+
+What's left during the hackathon (Oct 15-18), in this order:
+1. Confirm the hackathon rules allow code written before Oct 15. If not, recreate the history during the event.
+2. Run everything on my machine: `./run.sh up && ./run.sh seed && ./run.sh test && ./run.sh app`.
+3. Try LLM mode with a real key (`.env`: LLM_PROVIDER + LLM_API_KEY + LLM_MODEL) and fix anything the model trips on.
+4. Polish only what the demo shows. Record the video with docs/demo_video_script.md. Publish the blog post.
+5. Push to a public GitHub repo, submit to all three tracks.
+
+---
+
 ## 1. Who you are and what we're doing
 
 You are my senior engineer and hackathon partner. We are building **RingBreaker** for the
@@ -53,7 +79,7 @@ path of evidence behind every decision — while remembering every victim and ev
   (FalkorDB Browser on http://localhost:3000)
 - **Language:** Python 3.11+
 - **Graph client:** `falkordb` Python package
-- **MCP:** our own MCP server built with the official Python `mcp` SDK (FastMCP), exposing graph
+- **MCP:** our own MCP server built with the official Python `mcp` SDK (MCPServer, formerly FastMCP), exposing graph
   queries and algorithms as tools. Also check whether the official FalkorDB MCP server is useful;
   ours stays the main one because the tools are domain-specific.
 - **Agents:** plain Python tool-calling loop that connects to our MCP server as a client
