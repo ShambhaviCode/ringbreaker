@@ -54,12 +54,17 @@ def load_tenant(tenant: str, verbose: bool = True) -> dict:
 
 
 def apply_scenario2_feed(tenant: str = "demobank") -> dict:
-    """Simulates the bank's live feed: a new mule account opened on Oct 15 evening,
+    """Simulates the bank's live feed: a new mule account opened ~14 hours before the demo,
     using the same device D17 as ring R1. Used by demo scenario 2 ("knowledge kept current")."""
     data = json.loads((DATA_DIR / f"{tenant}.json").read_text())
     feed = data.get("feed_scenario2")
     if not feed:
         return {"applied": False}
+    from datetime import datetime, timedelta
+
+    opened = (datetime.now() - timedelta(hours=14)).replace(microsecond=0)
+    feed["account"]["opened_at"] = opened.isoformat()
+    paid_at = (opened + timedelta(hours=2, minutes=45)).isoformat()
     g = config.get_graph(tenant)
     exists = g.query("MATCH (a:Account {id: $id}) RETURN a.id", {"id": feed["account"]["id"]}).result_set
     if exists:
@@ -74,12 +79,12 @@ def apply_scenario2_feed(tenant: str = "demobank") -> dict:
         WITH a
         MATCH (d:Device {id: $device}), (src:Account {id: $src})
         CREATE (a)-[:USED_DEVICE {last_seen: $acc.opened_at}]->(d)
-        CREATE (t:Transaction {id: 'TXN-FEED-9104', amount: $amt, ts: '2026-10-15T21:05:00', channel: 'UPI',
-                               created_at: '2026-10-15T21:05:00'})
+        CREATE (t:Transaction {id: 'TXN-FEED-9104', amount: $amt, ts: $paid_at, channel: 'UPI', created_at: $paid_at})
         CREATE (src)-[:SENT]->(t)-[:TO]->(a)
         """,
         {"acc": feed["account"], "upi": feed["upi"], "phone": feed["phone"], "ip": feed["ip"],
-         "device": feed["device"], "src": feed["first_payment_from"], "amt": feed["first_payment_amount"]})
+         "device": feed["device"], "src": feed["first_payment_from"], "amt": feed["first_payment_amount"],
+         "paid_at": paid_at})
     Q.refresh_paid_projection(g)
     return {"applied": True, "account": feed["account"]["id"], "phone": feed["phone"]["number"]}
 

@@ -245,7 +245,8 @@ def detect_ring(seed_node_id: str, case_id: str = "", scam_type: str = "", min_s
     agreement = round(max(by_comm.values()) / len(accounts), 2) if by_comm else 0
 
     existing = r.q(Q.EXISTING_RINGS, {"ids": accounts})
-    ring_id = existing[0]["ring_id"] if existing else new_id("RING")
+    # deterministic id (lowest account number in the ring) so two concurrent investigations MERGE the same ring
+    ring_id = existing[0]["ring_id"] if existing else f"RING-{min(accounts).split('-', 1)[1]}"
     before = []
     if existing:
         before = [m["id"] for m in r.q(Q.RING_MEMBERS, {"ring_id": ring_id})]
@@ -425,9 +426,7 @@ def freeze_accounts(account_ids: list[str], case_id: str, reason: str, agent: st
     pol = _policy(r, "freeze")
     th, review_th = pol.get("freeze_threshold", 80), pol.get("review_threshold", 80)
     _, anchor = _case_anchor(r, case_id)
-    scores = {x["id"]: x for x in r.q(
-        "MATCH (a:Account) WHERE a.id IN $ids RETURN a.id AS id, a.risk_score AS score, a.status AS status",
-        {"ids": account_ids})}
+    scores = {x["id"]: x for x in r.q(Q.FREEZE_CANDIDATES, {"ids": account_ids})}
     frozen, refused = [], []
     for aid in account_ids:
         s = scores.get(aid)
@@ -436,6 +435,9 @@ def freeze_accounts(account_ids: list[str], case_id: str, reason: str, agent: st
             continue
         if s["status"] == "frozen":
             refused.append({"id": aid, "why": "already frozen"})
+            continue
+        if s["pending_review"]:
+            refused.append({"id": aid, "why": f"pending human review by {s['pending_review']}; a person decides"})
             continue
         score = s["score"] or 0
         if score < th:

@@ -288,6 +288,12 @@ OPTIONAL MATCH (p)-[:SUPERSEDES*1..5]->(old:Policy)
 RETURN p, collect(old.code) AS replaces
 ORDER BY p.effective_from DESC LIMIT 1
 """
+FREEZE_CANDIDATES = """
+MATCH (a:Account) WHERE a.id IN $ids
+OPTIONAL MATCH (rev:ActionTaken {type: 'review'})-[:TARGETS]->(a)
+OPTIONAL MATCH (rev)-[:ASSIGNED_TO]->(an:Analyst)
+RETURN a.id AS id, a.risk_score AS score, a.status AS status, head(collect(an.name)) AS pending_review
+"""
 FREEZE_ONE = """
 MATCH (a:Account {id: $acc}), (c:Case {id: $case_id}), (pol:Policy {code: $policy}), (ag:Agent {id: $agent})
 SET a.status = 'frozen', a.frozen_at = $ts
