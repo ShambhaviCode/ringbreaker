@@ -11,7 +11,7 @@ from __future__ import annotations
 
 # --------------------------------------------------------------------------- helpers
 
-DISPLAY = "coalesce(n.handle, n.number, n.holder_name, n.url, n.title, n.name, n.code, n.id)"
+DISPLAY = "CASE WHEN labels(n)[0] = 'Account' THEN n.id + ' (' + n.holder_name + ')' ELSE coalesce(n.handle, n.number, n.url, n.title, n.name, n.code, n.id) END"
 
 PREFIX_LABELS = [
     ("ACC-", "Account"), ("UPI-", "UPI"), ("PH-", "Phone"), ("IP-", "IP"), ("LNK-", "Link"),
@@ -230,7 +230,7 @@ CALL algo.SPpaths({sourceNode: s, targetNode: t,
                    relDirection: 'both', maxLen: 8, pathCount: 1})
 YIELD path
 RETURN [n IN nodes(path) | n.id] AS ids, [n IN nodes(path) | labels(n)[0]] AS labels,
-       [n IN nodes(path) | coalesce(n.handle, n.number, n.holder_name, n.url, n.id)] AS names,
+       [n IN nodes(path) | CASE WHEN labels(n)[0] = 'Account' THEN n.id + ' (' + n.holder_name + ')' ELSE coalesce(n.handle, n.number, n.url, n.id) END] AS names,
        [r IN relationships(path) | type(r)] AS rels
 """
 
@@ -248,24 +248,30 @@ RISK_FEATURES = """
 UNWIND $ids AS aid
 MATCH (a:Account {id: aid})
 OPTIONAL MATCH (a)-[:MEMBER_OF]->(ring:Ring)
-WITH a, count(ring) > 0 AS in_ring, collect(ring.id)[0] AS ring_id
+WITH a, collect(ring.id) AS rings
 OPTIONAL MATCH (a)-[:USED_DEVICE|LOGGED_IN_FROM]->(x)<-[:USED_DEVICE|LOGGED_IN_FROM]-(o:Account)
 WHERE o <> a
-WITH a, in_ring, ring_id, count(DISTINCT o) AS sharing_accounts,
-     count(DISTINCT CASE WHEN o.status = 'frozen' THEN o END) AS frozen_neighbours
-OPTIONAL MATCH (a)<-[:LINKED_TO]-(u:UPI)<-[:MENTIONS]-(r1:ScamReport)
-WITH a, in_ring, ring_id, sharing_accounts, frozen_neighbours, count(DISTINCT r1) AS rep_upi
+WITH a, rings, collect(DISTINCT o) AS neighbours
+OPTIONAL MATCH (a)<-[:LINKED_TO]-(:UPI)<-[:MENTIONS]-(r1:ScamReport)
+WITH a, rings, neighbours, collect(DISTINCT r1.id) AS rep1
 OPTIONAL MATCH (a)-[:REGISTERED_PHONE]->(:Phone)<-[:MENTIONS]-(r2:ScamReport)
-WITH a, in_ring, ring_id, sharing_accounts, frozen_neighbours, rep_upi, count(DISTINCT r2) AS rep_phone
+WITH a, rings, neighbours, rep1, collect(DISTINCT r2.id) AS rep2
 OPTIONAL MATCH (a)-[:REGISTERED_PHONE]->(:Phone)<-[:PROMOTED_BY]-(:Link)<-[:MENTIONS]-(r3:ScamReport)
-WITH a, in_ring, ring_id, sharing_accounts, frozen_neighbours, rep_upi + rep_phone + count(DISTINCT r3) AS reports
+WITH a, rings, neighbours, rep1, rep2, collect(DISTINCT r3.id) AS rep3
 OPTIONAL MATCH (s:Account)-[pin:PAID]->(a)
-WITH a, in_ring, ring_id, sharing_accounts, frozen_neighbours, reports,
-     count(DISTINCT s) AS distinct_senders, sum(pin.total) AS inflow,
-     count(DISTINCT CASE WHEN (s)-[:MEMBER_OF]->(:Ring {id: ring_id}) THEN s END) AS ring_senders
+WITH a, rings, neighbours, rep1, rep2, rep3, collect(s) AS senders, sum(pin.total) AS inflow
 OPTIONAL MATCH (a)-[pout:PAID]->(:Account)
-RETURN a.id AS id, a.opened_at AS opened_at, a.status AS status, in_ring, ring_id, sharing_accounts,
-       frozen_neighbours, reports, distinct_senders, ring_senders, inflow, sum(pout.total) AS outflow
+WITH a, rings, neighbours, rep1, rep2, rep3, senders, inflow, sum(pout.total) AS outflow
+OPTIONAL MATCH (s2:Account)-[:PAID]->(a), (s2)-[:MEMBER_OF]->(r:Ring)
+WHERE r.id IN rings
+WITH a, rings, neighbours, rep1, rep2, rep3, senders, inflow, outflow, collect(DISTINCT s2.id) AS ring_senders
+RETURN a.id AS id, a.opened_at AS opened_at, a.status AS status,
+       size(rings) > 0 AS in_ring, head(rings) AS ring_id,
+       size(neighbours) AS sharing_accounts,
+       size([n IN neighbours WHERE n.status = 'frozen']) AS frozen_neighbours,
+       size(rep1) + size(rep2) + size(rep3) AS reports,
+       size(senders) AS distinct_senders, size(ring_senders) AS ring_senders,
+       inflow, outflow
 """
 SET_RISK = """
 UNWIND $rows AS r
@@ -498,7 +504,7 @@ OPTIONAL MATCH (newer:Policy)-[:SUPERSEDES*1..5]->(pol)
 OPTIONAL MATCH (d)-[:SOURCED_FROM]->(src)
 RETURN d.id AS decision, d.ts AS ts, d.outcome AS outcome, d.reason AS reason, d.approval AS approval,
        acc.id AS account, c.id AS case_id, maker.id AS maker_id, coalesce(maker.name, maker.id) AS made_by,
-       labels(maker)[0] AS maker_type, appr.name AS approved_by, pol.code AS policy, pol.title AS policy_title,
+       labels(maker)[0] AS maker_type, appr.name AS approved_by, appr.id AS approver_id, pol.code AS policy, pol.title AS policy_title,
        collect(DISTINCT newer.code) AS superseded_by,
        collect(DISTINCT {id: src.id, type: labels(src)[0], title: coalesce(src.title, src.type),
                          url: src.url, text: coalesce(src.text, src.reason)}) AS sources
