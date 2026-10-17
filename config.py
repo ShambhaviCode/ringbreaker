@@ -11,22 +11,45 @@ except ImportError:  # dotenv is optional
 
 ROOT = Path(__file__).parent
 
-FALKORDB_HOST = os.getenv("FALKORDB_HOST", "localhost")
-FALKORDB_PORT = int(os.getenv("FALKORDB_PORT", "6379"))
-FALKORDB_PASSWORD = os.getenv("FALKORDB_PASSWORD") or None
+
+def setting(name: str, default=None):
+    """Read environment variables first, then Streamlit Cloud Secrets."""
+    value = os.getenv(name)
+    if value:
+        return value
+
+    try:
+        import streamlit as st
+
+        return st.secrets.get(name, default)
+    except Exception:
+        return default
+
+
+FALKORDB_HOST = setting("FALKORDB_HOST", "localhost")
+FALKORDB_PORT = int(setting("FALKORDB_PORT", "6379"))
+FALKORDB_PASSWORD = setting("FALKORDB_PASSWORD") or None
 
 # Each bank (tenant) gets its own isolated graph inside one FalkorDB instance.
-DEFAULT_TENANT = os.getenv("TENANT", "demobank")
-TENANTS = [t.strip() for t in os.getenv("TENANTS", "demobank,suraksha").split(",") if t.strip()]
+DEFAULT_TENANT = setting("TENANT", "demobank")
+TENANTS = [
+    t.strip()
+    for t in setting("TENANTS", "demobank,suraksha").split(",")
+    if t.strip()
+]
 
 # LLM: "anthropic", "openai" (any OpenAI-compatible endpoint) or "none" (offline playbook mode)
-LLM_PROVIDER = os.getenv("LLM_PROVIDER", "none").lower()
-LLM_MODEL = os.getenv("LLM_MODEL", "")
-LLM_BASE_URL = os.getenv("LLM_BASE_URL") or None
-LLM_API_KEY = os.getenv("LLM_API_KEY") or os.getenv("ANTHROPIC_API_KEY") or os.getenv("OPENAI_API_KEY")
+LLM_PROVIDER = setting("LLM_PROVIDER", "none").lower()
+LLM_MODEL = setting("LLM_MODEL", "")
+LLM_BASE_URL = setting("LLM_BASE_URL") or None
+LLM_API_KEY = (
+    setting("LLM_API_KEY")
+    or setting("ANTHROPIC_API_KEY")
+    or setting("OPENAI_API_KEY")
+)
 
 # How agents reach the tools: "mcp" (spawns our MCP server over stdio) or "local" (direct import)
-TOOL_TRANSPORT = os.getenv("TOOL_TRANSPORT", "mcp").lower()
+TOOL_TRANSPORT = setting("TOOL_TRANSPORT", "mcp").lower()
 
 
 def graph_name(tenant: str | None = None) -> str:
@@ -36,7 +59,11 @@ def graph_name(tenant: str | None = None) -> str:
 def connect():
     from falkordb import FalkorDB
 
-    return FalkorDB(host=FALKORDB_HOST, port=FALKORDB_PORT, password=FALKORDB_PASSWORD)
+    return FalkorDB(
+        host=FALKORDB_HOST,
+        port=FALKORDB_PORT,
+        password=FALKORDB_PASSWORD,
+    )
 
 
 def get_graph(tenant: str | None = None):
