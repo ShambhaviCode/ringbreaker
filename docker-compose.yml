@@ -1,6 +1,6 @@
 services:
   falkordb:
-    image: falkordb/falkordb:latest
+    image: falkordb/falkordb:v4.18.11   # pinned: the code targets 4.18 (6.x changed the fulltext index API)
     ports:
       - "6379:6379"   # graph (Redis protocol)
       - "3000:3000"   # FalkorDB Browser: http://localhost:3000

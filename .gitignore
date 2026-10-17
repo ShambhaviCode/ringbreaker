@@ -5,3 +5,10 @@ data/out/
 .fdb/
 lib/
 *.html.tmp
+
+# Local debugging output
+code_out.txt
+detect_out.txt
+grep_out.txt
+q_out.txt
+test_out.txt
