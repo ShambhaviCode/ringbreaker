@@ -1,3 +1,4 @@
+from pathlib import Path
 def setting(name: str, default=None):
     import os
 
