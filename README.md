@@ -1,4 +1,6 @@
 # RingBreaker
+
+
 <img width="1911" height="961" alt="Screenshot 2026-10-18 141616" src="https://github.com/user-attachments/assets/7bd3de6f-b471-4754-9443-3e2833de313b" />
 
 
@@ -56,11 +58,7 @@ python -m mcp_server.server            # stdio
 python -m mcp_server.server --http     # streamable HTTP on :8765
 ```
 
-Claude Desktop config example:
 
-```json
-{"mcpServers": {"ringbreaker": {"command": "python", "args": ["-m", "mcp_server.server"], "cwd": "/path/to/ringbreaker"}}}
-```
 
 ## How the graph drives decisions
 
