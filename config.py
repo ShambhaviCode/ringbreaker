@@ -34,3 +34,10 @@ def graph_name(tenant: str) -> str:
 
 def get_graph(tenant: str | None = None):
     return connect().select_graph(graph_name(tenant or "demobank"))
+
+TOOL_TRANSPORT = setting("TOOL_TRANSPORT", "mcp")
+LLM_PROVIDER = setting("LLM_PROVIDER", "none")
+LLM_MODEL = setting("LLM_MODEL", "")
+TENANTS = ["demobank", "suraksha"]
+FALKORDB_HOST = setting("FALKORDB_HOST", "localhost")
+FALKORDB_PORT = int(setting("FALKORDB_PORT", 6379))
