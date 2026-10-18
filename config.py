@@ -31,3 +31,6 @@ def graph_name(tenant: str) -> str:
 
 
 
+
+def get_graph(tenant: str | None = None):
+    return connect().select_graph(graph_name(tenant or "demobank"))
