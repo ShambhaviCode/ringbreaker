@@ -12,3 +12,6 @@ detect_out.txt
 grep_out.txt
 q_out.txt
 test_out.txt
+__pycache__/
+*.pyc
+*.pyo

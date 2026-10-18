@@ -29,3 +29,4 @@ def connect():
 def graph_name(tenant: str) -> str:
     return f"bank_{tenant}"
 
+
