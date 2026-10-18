@@ -26,6 +26,7 @@ def setting(name: str, default=None):
 FALKORDB_HOST = setting("FALKORDB_HOST", "localhost")
 FALKORDB_PORT = int(setting("FALKORDB_PORT", "6379"))
 FALKORDB_PASSWORD = setting("FALKORDB_PASSWORD") or None
+FALKORDB_USER = setting("FALKORDB_USER", "falkordb")
 
 DEFAULT_TENANT = setting("TENANT", "demobank")
 TENANTS = [
@@ -54,7 +55,9 @@ def connect():
     return FalkorDB(
         host=FALKORDB_HOST,
         port=FALKORDB_PORT,
+        username=FALKORDB_USER,
         password=FALKORDB_PASSWORD,
+        
     )
 
 
