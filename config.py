@@ -11,3 +11,4 @@ def setting(name: str, default=None):
         return value
     except Exception:
         return default
+ROOT = Path(__file__).parent
