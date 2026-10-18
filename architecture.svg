@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 560" font-family="Hind, Segoe UI, Helvetica, Arial, sans-serif">
+  <rect width="960" height="560" fill="#EEF1F5"/>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#4A5468"/>
+    </marker>
+  </defs>
+  <text x="32" y="44" font-size="24" font-weight="700" fill="#1A2233">RingBreaker architecture</text>
+  <text x="32" y="70" font-size="14" fill="#4A5468">Agents never pass state to each other: every handoff, memory and action is written to the graph.</text>
+
+  <!-- customer + UI -->
+  <rect x="32" y="104" width="170" height="64" rx="8" fill="#fff" stroke="#C9CFDA"/>
+  <text x="117" y="132" font-size="15" font-weight="600" text-anchor="middle" fill="#1A2233">Customer</text>
+  <text x="117" y="152" font-size="12.5" text-anchor="middle" fill="#4A5468">reports a UPI, phone, link</text>
+  <rect x="32" y="196" width="170" height="64" rx="8" fill="#fff" stroke="#C9CFDA"/>
+  <text x="117" y="224" font-size="15" font-weight="600" text-anchor="middle" fill="#1A2233">Fraud analyst</text>
+  <text x="117" y="244" font-size="12.5" text-anchor="middle" fill="#4A5468">asks the company brain</text>
+  <rect x="32" y="288" width="170" height="64" rx="8" fill="#fff" stroke="#C9CFDA"/>
+  <text x="117" y="316" font-size="15" font-weight="600" text-anchor="middle" fill="#1A2233">Streamlit UI / CLI</text>
+  <text x="117" y="336" font-size="12.5" text-anchor="middle" fill="#4A5468">graph view, why-panel</text>
+
+  <!-- agents -->
+  <rect x="248" y="96" width="250" height="300" rx="10" fill="#fff" stroke="#C9CFDA"/>
+  <text x="264" y="122" font-size="15" font-weight="600" fill="#1A2233">Agents (Python)</text>
+  <rect x="264" y="136" width="218" height="46" rx="6" fill="#3E8E85" fill-opacity="0.12" stroke="#3E8E85"/>
+  <text x="276" y="156" font-size="14" font-weight="600" fill="#1A2233">Intake</text>
+  <text x="276" y="173" font-size="12" fill="#4A5468">recalls customer, files report</text>
+  <rect x="264" y="190" width="218" height="46" rx="6" fill="#2D3FA6" fill-opacity="0.12" stroke="#2D3FA6"/>
+  <text x="276" y="210" font-size="14" font-weight="600" fill="#1A2233">Investigator</text>
+  <text x="276" y="227" font-size="12" fill="#4A5468">playbook + LLM pick tools, find ring</text>
+  <rect x="264" y="244" width="218" height="46" rx="6" fill="#C8102E" fill-opacity="0.10" stroke="#C8102E"/>
+  <text x="276" y="264" font-size="14" font-weight="600" fill="#1A2233">Action</text>
+  <text x="276" y="281" font-size="12" fill="#4A5468">freeze / review / alert / complaint</text>
+  <rect x="264" y="298" width="218" height="46" rx="6" fill="#6B4FA0" fill-opacity="0.12" stroke="#6B4FA0"/>
+  <text x="276" y="318" font-size="14" font-weight="600" fill="#1A2233">Brain</text>
+  <text x="276" y="335" font-size="12" fill="#4A5468">who decided what, and why</text>
+  <text x="264" y="376" font-size="12" fill="#4A5468">LLM: Anthropic / OpenAI-compatible / none</text>
+
+  <!-- MCP -->
+  <rect x="540" y="96" width="150" height="300" rx="10" fill="#1A2233"/>
+  <text x="615" y="128" font-size="15" font-weight="600" text-anchor="middle" fill="#fff">MCP server</text>
+  <text x="615" y="148" font-size="11.5" text-anchor="middle" fill="#C9CFDA">30 tools; each returns</text>
+  <text x="615" y="164" font-size="11.5" text-anchor="middle" fill="#C9CFDA">result, evidence, cypher</text>
+  <text x="556" y="200" font-size="12.5" fill="#fff">lookup_entity</text>
+  <text x="556" y="219" font-size="12.5" fill="#fff">expand_neighbors</text>
+  <text x="556" y="238" font-size="12.5" fill="#fff">detect_ring</text>
+  <text x="556" y="257" font-size="12.5" fill="#fff">rank_ring_members</text>
+  <text x="556" y="276" font-size="12.5" fill="#fff">money_trail</text>
+  <text x="556" y="295" font-size="12.5" fill="#fff">freeze_accounts</text>
+  <text x="556" y="320" font-size="12.5" fill="#fff">recall_user, handoff ...</text>
+  <text x="556" y="345" font-size="12.5" fill="#fff">trace_decision ...</text>
+
+  <!-- FalkorDB -->
+  <rect x="732" y="96" width="200" height="420" rx="10" fill="#fff" stroke="#2D3FA6" stroke-width="2"/>
+  <text x="832" y="126" font-size="16" font-weight="700" text-anchor="middle" fill="#1A2233">FalkorDB</text>
+  <text x="832" y="145" font-size="12" text-anchor="middle" fill="#4A5468">one isolated graph per bank</text>
+  <rect x="748" y="160" width="168" height="96" rx="6" fill="#E3A33A" fill-opacity="0.16"/>
+  <text x="760" y="180" font-size="13" font-weight="600" fill="#1A2233">Fraud layer</text>
+  <text x="760" y="198" font-size="11.5" fill="#4A5468">Account, UPI, Phone,</text>
+  <text x="760" y="213" font-size="11.5" fill="#4A5468">Device, IP, Link, Transaction,</text>
+  <text x="760" y="228" font-size="11.5" fill="#4A5468">PAID, ScamReport, Ring</text>
+  <text x="760" y="246" font-size="11" fill="#2D3FA6">WCC, PageRank, SPpaths</text>
+  <rect x="748" y="266" width="168" height="96" rx="6" fill="#3E8E85" fill-opacity="0.14"/>
+  <text x="760" y="286" font-size="13" font-weight="600" fill="#1A2233">Memory layer</text>
+  <text x="760" y="304" font-size="11.5" fill="#4A5468">User, Session, Message,</text>
+  <text x="760" y="319" font-size="11.5" fill="#4A5468">Case, Handoff, ActionTaken</text>
+  <text x="760" y="334" font-size="11.5" fill="#4A5468">Memory: episodic, semantic,</text>
+  <text x="760" y="349" font-size="11.5" fill="#4A5468">procedural playbooks</text>
+  <rect x="748" y="372" width="168" height="96" rx="6" fill="#6B4FA0" fill-opacity="0.12"/>
+  <text x="760" y="392" font-size="13" font-weight="600" fill="#1A2233">Company layer</text>
+  <text x="760" y="410" font-size="11.5" fill="#4A5468">Analyst, Team, ScamType,</text>
+  <text x="760" y="425" font-size="11.5" fill="#4A5468">Policy, Decision,</text>
+  <text x="760" y="440" font-size="11.5" fill="#4A5468">Document (tickets, chats)</text>
+  <text x="760" y="456" font-size="11" fill="#2D3FA6">SUPERSEDES, full-text index</text>
+  
+  <text x="832" y="500" font-size="12" text-anchor="middle" fill="#4A5468">bank_demobank · bank_suraksha</text>
+
+  <!-- arrows -->
+  <line x1="202" y1="136" x2="262" y2="156" stroke="#4A5468" stroke-width="1.5" marker-end="url(#a)"/>
+  <line x1="202" y1="228" x2="262" y2="318" stroke="#4A5468" stroke-width="1.5" marker-end="url(#a)"/>
+  <line x1="202" y1="320" x2="246" y2="320" stroke="#4A5468" stroke-width="1.5" marker-end="url(#a)"/>
+  <line x1="498" y1="246" x2="538" y2="246" stroke="#4A5468" stroke-width="1.5" marker-end="url(#a)" marker-start="url(#a)"/>
+  <text x="518" y="236" font-size="11" text-anchor="middle" fill="#4A5468">stdio</text>
+  <line x1="690" y1="246" x2="730" y2="246" stroke="#4A5468" stroke-width="1.5" marker-end="url(#a)" marker-start="url(#a)"/>
+  <text x="710" y="236" font-size="11" text-anchor="middle" fill="#4A5468">Cypher</text>
+
+  <!-- flow -->
+  <rect x="32" y="430" width="666" height="86" rx="8" fill="#fff" stroke="#C9CFDA"/>
+  <text x="48" y="456" font-size="14" font-weight="600" fill="#1A2233">One report, end to end</text>
+  <text x="48" y="478" font-size="12.5" fill="#4A5468">Intake: recall_user, file_report, handoff  →  Investigator: get_playbook, lookup, expand, shared infra,</text>
+  <text x="48" y="496" font-size="12.5" fill="#4A5468">memories, detect_ring, PageRank, money_trail, risk_score, write_memory, update_playbook, handoff  →</text>
+  <text x="48" y="514" font-size="12.5" fill="#4A5468">Action: current_policy, freeze (evidence path stored), review, alert, complaint, handoff  →  Intake replies</text>
+</svg>
